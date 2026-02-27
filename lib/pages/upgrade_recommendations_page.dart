@@ -943,7 +943,7 @@ class _UpgradeRecommendationsPageState
   }
 
   // ── recommendation card ───────────────────────────────────────────────────
-  Widget _recCard(Map<String, dynamic> rec, int num, AppColors ac) {
+  Widget _recCard(Map<String, dynamic> rec, int index, AppColors ac) {
     final priority   = rec['priority'] as String?;
     final pColor     = _prioColor(priority);
     final priceUsd   = (rec['price'] as num).toDouble();
@@ -980,7 +980,7 @@ class _UpgradeRecommendationsPageState
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
-                    child: Text('$num',
+                    child: Text('$index',
                         style: TextStyle(
                             color: pColor,
                             fontSize: 13,
