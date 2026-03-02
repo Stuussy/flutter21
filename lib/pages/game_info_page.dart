@@ -34,6 +34,7 @@ class _GameInfoPageState extends State<GameInfoPage>
   bool _fromCache = false;
   bool _hasNetworkError = false;
   String _networkErrorMsg = '';
+  bool _noPcSpecs = false;
 
   late AnimationController _fpsController;
   late Animation<int> _fpsAnimation;
@@ -134,6 +135,7 @@ class _GameInfoPageState extends State<GameInfoPage>
     setState(() {
       isLoading = true;
       _hasNetworkError = false;
+      _noPcSpecs = false;
     });
 
     // Try cache first (skip if user explicitly refreshes)
@@ -188,6 +190,21 @@ class _GameInfoPageState extends State<GameInfoPage>
         } else {
           if (mounted) setState(() => isLoading = false);
           _showSnackBar(data['message'] ?? "Ошибка проверки", Colors.red);
+        }
+      } else if (response.statusCode == 400) {
+        final data = jsonDecode(response.body);
+        final msg = (data['message'] ?? '').toString().toLowerCase();
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+            _noPcSpecs = msg.contains('характеристик') ||
+                msg.contains('добавьте') ||
+                msg.contains('pc') ||
+                msg.contains('пк');
+          });
+          if (!_noPcSpecs) {
+            _showSnackBar(data['message'] ?? "Ошибка проверки", Colors.red);
+          }
         }
       } else {
         if (mounted) setState(() => isLoading = false);
@@ -667,27 +684,24 @@ class _GameInfoPageState extends State<GameInfoPage>
                             ),
                           ),
                         )
-                  : compatibilityData == null
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.error_outline,
-                                color: Colors.white.withValues(alpha: 0.5),
-                                size: 64,
+                  : (_noPcSpecs || compatibilityData == null)
+                      ? _noPcSpecs
+                          ? _buildNoPcSpecsScreen()
+                          : Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.error_outline,
+                                      color: Colors.white.withValues(alpha: 0.5),
+                                      size: 64),
+                                  const SizedBox(height: 16),
+                                  Text("Не удалось загрузить данные",
+                                      style: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.6),
+                                          fontSize: 16)),
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                "Сначала добавьте характеристики ПК",
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
+                            )
                       : RefreshIndicator(
                           color: const Color(0xFF6C63FF),
                           backgroundColor: const Color(0xFF1A1A2E),
@@ -735,6 +749,71 @@ class _GameInfoPageState extends State<GameInfoPage>
                             ),
                           ),
                         ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoPcSpecsScreen() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                color: const Color(0xFF6C63FF).withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.computer_outlined,
+                color: Color(0xFF6C63FF),
+                size: 48,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Сначала настройте ПК',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Чтобы проверить совместимость с игрой, укажите компоненты своего компьютера — процессор, видеокарту и оперативную память.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.55),
+                fontSize: 14,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.settings_outlined, size: 20),
+                label: const Text(
+                  'Перейти к настройке ПК',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6C63FF),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
+                ),
+              ),
             ),
           ],
         ),

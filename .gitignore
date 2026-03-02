@@ -1,0 +1,13 @@
+# Backend secrets
+backend/.env
+
+# Flutter/Dart
+.dart_tool/
+build/
+*.g.dart
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock
+
+# Node.js
+backend/node_modules/

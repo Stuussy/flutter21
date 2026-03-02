@@ -378,6 +378,8 @@ class _LoginPageState extends State<LoginPage>
           prefixIcon: Icon(icon, color: const Color(0xFF6C63FF), size: 20),
           hintText: hint,
           hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 14),
+          filled: true,
+          fillColor: Colors.transparent,
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -624,6 +626,8 @@ class _LoginPageState extends State<LoginPage>
             color: Colors.white.withValues(alpha: 0.4),
             fontSize: 15,
           ),
+          filled: true,
+          fillColor: Colors.transparent,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,

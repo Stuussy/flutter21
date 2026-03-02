@@ -18,11 +18,13 @@ class _RegisterPageState extends State<RegisterPage>
   final TextEditingController nameCtrl = TextEditingController();
   final TextEditingController emailCtrl = TextEditingController();
   final TextEditingController passCtrl = TextEditingController();
+  final TextEditingController confirmPassCtrl = TextEditingController();
   final TextEditingController codeCtrl = TextEditingController();
 
   bool _isLoading = false;
   bool _isSendingCode = false;
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   // OTP state
   bool _codeSent = false;
@@ -55,6 +57,7 @@ class _RegisterPageState extends State<RegisterPage>
     nameCtrl.dispose();
     emailCtrl.dispose();
     passCtrl.dispose();
+    confirmPassCtrl.dispose();
     codeCtrl.dispose();
     _cooldownTimer?.cancel();
     _animController.dispose();
@@ -65,7 +68,10 @@ class _RegisterPageState extends State<RegisterPage>
     setState(() => _resendCooldown = 60);
     _cooldownTimer?.cancel();
     _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) { t.cancel(); return; }
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
       setState(() {
         if (_resendCooldown > 0) {
           _resendCooldown--;
@@ -79,11 +85,17 @@ class _RegisterPageState extends State<RegisterPage>
   void _checkPasswordStrength() {
     final password = passCtrl.text;
     if (password.isEmpty) {
-      setState(() { passwordStrength = ""; passwordStrengthColor = Colors.grey; });
+      setState(() {
+        passwordStrength = "";
+        passwordStrengthColor = Colors.grey;
+      });
       return;
     }
     if (password.length < 8) {
-      setState(() { passwordStrength = "Слабый (минимум 8 символов)"; passwordStrengthColor = Colors.red; });
+      setState(() {
+        passwordStrength = "Слабый (минимум 8 символов)";
+        passwordStrengthColor = Colors.red;
+      });
       return;
     }
     int strength = 0;
@@ -106,8 +118,9 @@ class _RegisterPageState extends State<RegisterPage>
     });
   }
 
-  bool _isValidEmail(String email) =>
-      RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(email);
+  bool _isValidEmail(String email) => RegExp(
+    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+  ).hasMatch(email);
 
   Future<void> _sendCode() async {
     final username = nameCtrl.text.trim();
@@ -127,11 +140,21 @@ class _RegisterPageState extends State<RegisterPage>
       return;
     }
     if (!password.contains(RegExp(r'[A-Z]'))) {
-      _showSnackBar("Пароль должен содержать хотя бы одну заглавную букву", Colors.red);
+      _showSnackBar(
+        "Пароль должен содержать хотя бы одну заглавную букву",
+        Colors.red,
+      );
       return;
     }
     if (!password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
-      _showSnackBar("Пароль должен содержать хотя бы один спецсимвол", Colors.red);
+      _showSnackBar(
+        "Пароль должен содержать хотя бы один спецсимвол",
+        Colors.red,
+      );
+      return;
+    }
+    if (confirmPassCtrl.text.trim() != password) {
+      _showSnackBar("Пароли не совпадают", Colors.red);
       return;
     }
 
@@ -195,7 +218,10 @@ class _RegisterPageState extends State<RegisterPage>
         if (loginRes.statusCode == 200) {
           final loginData = jsonDecode(loginRes.body);
           if (loginData['success'] == true) {
-            await SessionManager.saveUserSession(email, loginData['token'] as String);
+            await SessionManager.saveUserSession(
+              email,
+              loginData['token'] as String,
+            );
           }
         }
         if (mounted) {
@@ -222,14 +248,21 @@ class _RegisterPageState extends State<RegisterPage>
         content: Row(
           children: [
             Icon(
-              color == const Color(0xFF4CAF50) ? Icons.check_circle : Icons.error_outline,
+              color == const Color(0xFF4CAF50)
+                  ? Icons.check_circle
+                  : Icons.error_outline,
               color: Colors.white,
               size: 20,
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(message,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           ],
         ),
@@ -253,7 +286,11 @@ class _RegisterPageState extends State<RegisterPage>
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -272,26 +309,34 @@ class _RegisterPageState extends State<RegisterPage>
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6C63FF).withValues(alpha: 0.15),
+                            color: const Color(
+                              0xFF6C63FF,
+                            ).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Icon(Icons.person_add_alt_1,
-                              color: Color(0xFF6C63FF), size: 40),
+                          child: const Icon(
+                            Icons.person_add_alt_1,
+                            color: Color(0xFF6C63FF),
+                            size: 40,
+                          ),
                         ),
                         const SizedBox(height: 32),
                         const Text(
                           "Создать аккаунт",
                           style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 28,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1),
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           "Начните играть с GamePulse",
                           style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.6), fontSize: 14),
+                            color: Colors.white.withValues(alpha: 0.6),
+                            fontSize: 14,
+                          ),
                         ),
                         const SizedBox(height: 40),
 
@@ -323,28 +368,61 @@ class _RegisterPageState extends State<RegisterPage>
                           enabled: !_codeSent,
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                               color: const Color(0xFF6C63FF),
                               size: 20,
                             ),
-                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                            onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            ),
                           ),
                         ),
                         if (passwordStrength.isNotEmpty && !_codeSent) ...[
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              Icon(Icons.shield_outlined,
-                                  color: passwordStrengthColor, size: 16),
+                              Icon(
+                                Icons.shield_outlined,
+                                color: passwordStrengthColor,
+                                size: 16,
+                              ),
                               const SizedBox(width: 8),
-                              Text(passwordStrength,
-                                  style: TextStyle(
-                                      color: passwordStrengthColor,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600)),
+                              Text(
+                                passwordStrength,
+                                style: TextStyle(
+                                  color: passwordStrengthColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ],
                           ),
                         ],
+                        const SizedBox(height: 16),
+
+                        // ── Подтверждение пароля ──────────────────────────
+                        _buildTextField(
+                          controller: confirmPassCtrl,
+                          hintText: "Подтверждение пароля",
+                          icon: Icons.lock_person_outlined,
+                          obscureText: _obscureConfirmPassword,
+                          enabled: !_codeSent,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: const Color(0xFF6C63FF),
+                              size: 20,
+                            ),
+                            onPressed: () => setState(
+                              () => _obscureConfirmPassword =
+                                  !_obscureConfirmPassword,
+                            ),
+                          ),
+                        ),
                         const SizedBox(height: 20),
 
                         // ── Кнопка «Получить код» или поле кода ──────────
@@ -359,21 +437,30 @@ class _RegisterPageState extends State<RegisterPage>
                                       width: 18,
                                       height: 18,
                                       child: CircularProgressIndicator(
-                                          color: Colors.white, strokeWidth: 2))
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
                                   : const Icon(Icons.email_outlined, size: 20),
                               label: Text(
-                                _isSendingCode ? "Отправка..." : "Получить код на почту",
+                                _isSendingCode
+                                    ? "Отправка..."
+                                    : "Получить код на почту",
                                 style: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w600),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF6C63FF),
                                 foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16)),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                                 elevation: 0,
-                                disabledBackgroundColor:
-                                    const Color(0xFF6C63FF).withValues(alpha: 0.5),
+                                disabledBackgroundColor: const Color(
+                                  0xFF6C63FF,
+                                ).withValues(alpha: 0.5),
                               ),
                             ),
                           ),
@@ -382,22 +469,33 @@ class _RegisterPageState extends State<RegisterPage>
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4CAF50).withValues(alpha: 0.08),
+                              color: const Color(
+                                0xFF4CAF50,
+                              ).withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                  color: const Color(0xFF4CAF50).withValues(alpha: 0.3)),
+                                color: const Color(
+                                  0xFF4CAF50,
+                                ).withValues(alpha: 0.3),
+                              ),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.mark_email_read_rounded,
-                                    color: Color(0xFF4CAF50), size: 20),
+                                const Icon(
+                                  Icons.mark_email_read_rounded,
+                                  color: Color(0xFF4CAF50),
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
                                     "Код отправлен на ${emailCtrl.text.trim()}",
                                     style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.8),
-                                        fontSize: 13),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.8,
+                                      ),
+                                      fontSize: 13,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -422,10 +520,13 @@ class _RegisterPageState extends State<RegisterPage>
                                         codeCtrl.clear();
                                       },
                                 icon: const Icon(Icons.edit_outlined, size: 14),
-                                label: const Text("Изменить данные",
-                                    style: TextStyle(fontSize: 12)),
+                                label: const Text(
+                                  "Изменить данные",
+                                  style: TextStyle(fontSize: 12),
+                                ),
                                 style: TextButton.styleFrom(
-                                    foregroundColor: Colors.white54),
+                                  foregroundColor: Colors.white54,
+                                ),
                               ),
                               TextButton(
                                 onPressed: _resendCooldown > 0 || _isSendingCode
@@ -455,20 +556,29 @@ class _RegisterPageState extends State<RegisterPage>
                                 backgroundColor: const Color(0xFF6C63FF),
                                 foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16)),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                                 elevation: 0,
-                                disabledBackgroundColor:
-                                    const Color(0xFF6C63FF).withValues(alpha: 0.5),
+                                disabledBackgroundColor: const Color(
+                                  0xFF6C63FF,
+                                ).withValues(alpha: 0.5),
                               ),
                               child: _isLoading
                                   ? const SizedBox(
                                       height: 20,
                                       width: 20,
                                       child: CircularProgressIndicator(
-                                          color: Colors.white, strokeWidth: 2))
-                                  : const Text("Создать аккаунт",
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      "Создать аккаунт",
                                       style: TextStyle(
-                                          fontSize: 16, fontWeight: FontWeight.w600)),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                             ),
                           ),
                         ],
@@ -480,13 +590,16 @@ class _RegisterPageState extends State<RegisterPage>
                             text: TextSpan(
                               text: "Уже есть аккаунт? ",
                               style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6), fontSize: 14),
+                                color: Colors.white.withValues(alpha: 0.6),
+                                fontSize: 14,
+                              ),
                               children: const [
                                 TextSpan(
                                   text: "Войти",
                                   style: TextStyle(
-                                      color: Color(0xFF6C63FF),
-                                      fontWeight: FontWeight.w600),
+                                    color: Color(0xFF6C63FF),
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ],
                             ),
@@ -530,20 +643,30 @@ class _RegisterPageState extends State<RegisterPage>
         keyboardType: keyboardType,
         enabled: enabled,
         style: TextStyle(
-            color: enabled ? Colors.white : Colors.white54, fontSize: 15),
+          color: enabled ? Colors.white : Colors.white54,
+          fontSize: 15,
+        ),
         decoration: InputDecoration(
-          prefixIcon: Icon(icon,
-              color: enabled
-                  ? const Color(0xFF6C63FF)
-                  : const Color(0xFF6C63FF).withValues(alpha: 0.4),
-              size: 20),
+          prefixIcon: Icon(
+            icon,
+            color: enabled
+                ? const Color(0xFF6C63FF)
+                : const Color(0xFF6C63FF).withValues(alpha: 0.4),
+            size: 20,
+          ),
           suffixIcon: suffixIcon,
           hintText: hintText,
           hintStyle: TextStyle(
-              color: Colors.white.withValues(alpha: 0.4), fontSize: 15),
+            color: Colors.white.withValues(alpha: 0.4),
+            fontSize: 15,
+          ),
+          filled: true,
+          fillColor: Colors.transparent,
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
         ),
       ),
     );
