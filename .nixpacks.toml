@@ -1,0 +1,8 @@
+# Используем только Node.js — игнорируем Flutter/Dart из pubspec.yaml
+providers = ["node"]
+
+[phases.build]
+cmds = ["npm install --production"]
+
+[start]
+cmd = "node backend/server.js"
