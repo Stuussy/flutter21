@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:async';
 import 'dart:convert';
 import 'add_pc_page.dart';
 import 'game_info_page.dart';
@@ -30,6 +31,7 @@ class _ProfilePageState extends State<ProfilePage>
 
   List<Map<String, dynamic>> checkHistory = [];
   int _favoritesCount = 0;
+  Timer? _refreshTimer;
 
   static const _purple  = Color(0xFF6C63FF);
   static const _green   = Color(0xFF4CAF50);
@@ -47,10 +49,12 @@ class _ProfilePageState extends State<ProfilePage>
     FavoritesManager.changeCount.addListener(_loadFavCount);
     SessionManager.pcChangeCount.addListener(_onPCChanged);
     _loadAll();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 15), (_) => fetchUserData(silent: true));
   }
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
     FavoritesManager.changeCount.removeListener(_loadFavCount);
     SessionManager.pcChangeCount.removeListener(_onPCChanged);
     _fadeController.dispose();
@@ -68,9 +72,9 @@ class _ProfilePageState extends State<ProfilePage>
     if (mounted) setState(() => _favoritesCount = favs.length);
   }
 
-  Future<void> fetchUserData() async {
+  Future<void> fetchUserData({bool silent = false}) async {
     if (_isRefreshing) return;
-    if (mounted) setState(() => _isRefreshing = true);
+    if (!silent && mounted) setState(() => _isRefreshing = true);
     try {
       final token = await SessionManager.getAuthToken() ?? '';
       final res = await http.get(
@@ -402,6 +406,8 @@ class _ProfilePageState extends State<ProfilePage>
           prefixIcon: Icon(icon, color: _purple, size: 20),
           hintText: hint,
           hintStyle: TextStyle(color: ac.textHint, fontSize: 14),
+          filled: true,
+          fillColor: Colors.transparent,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),

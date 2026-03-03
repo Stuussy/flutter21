@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class MinimalButton extends StatelessWidget {
@@ -87,9 +86,7 @@ class MinimalTextField extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A2E),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: TextField(
         controller: controller,
@@ -100,7 +97,10 @@ class MinimalTextField extends StatelessWidget {
           prefixIcon: Icon(icon, color: const Color(0xFF6C63FF), size: 20),
           suffixIcon: suffixIcon,
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 15),
+          hintStyle: TextStyle(
+            color: Colors.white.withValues(alpha: 0.4),
+            fontSize: 15,
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
@@ -158,11 +158,7 @@ class InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icon,
-          color: iconColor ?? const Color(0xFF6C63FF),
-          size: 18,
-        ),
+        Icon(icon, color: iconColor ?? const Color(0xFF6C63FF), size: 18),
         const SizedBox(width: 12),
         Text(
           "$label:",
@@ -208,9 +204,7 @@ class StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -279,12 +273,9 @@ class MinimalSnackBar {
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
       ),
     );
   }
 }
-

@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         ),
         inputDecorationTheme: const InputDecorationTheme(
           filled: true,
-          fillColor: Colors.white24,
+          fillColor: Colors.transparent,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(12)),
           ),
@@ -37,13 +37,13 @@ class MyApp extends StatelessWidget {
           primary: Color(0xFF6C63FF),
           surface: Color(0xFFFFFFFF),
         ),
-        inputDecorationTheme: InputDecorationTheme(
+        inputDecorationTheme: const InputDecorationTheme(
           filled: true,
-          fillColor: Colors.grey.shade100,
-          border: const OutlineInputBorder(
+          fillColor: Colors.transparent,
+          border: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(12)),
           ),
-          hintStyle: const TextStyle(color: Colors.black45),
+          hintStyle: TextStyle(color: Colors.black45),
         ),
       );
 

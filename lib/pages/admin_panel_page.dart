@@ -521,7 +521,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
           hintText: hint,
           hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 13),
           filled: true,
-          fillColor: Colors.white.withValues(alpha: 0.06),
+          fillColor: Colors.transparent,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
@@ -732,7 +732,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
           hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 13),
           prefixIcon: Icon(Icons.search_rounded, color: Colors.white.withValues(alpha: 0.4), size: 20),
           filled: true,
-          fillColor: _card,
+          fillColor: Colors.transparent,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),

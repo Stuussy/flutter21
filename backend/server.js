@@ -4,8 +4,8 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const { GoogleGenAI } = require("@google/genai");
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const Groq = require("groq-sdk");
+const ai = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const JWT_SECRET = process.env.JWT_SECRET || "gamepulse_jwt_secret_2024";
 const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET || "gamepulse_admin_jwt_secret_2024_secure";
@@ -99,7 +99,7 @@ function adminAuth(req, res, next) {
 }
 
 mongoose
-  .connect("mongodb://localhost:27017/gamepulse", {
+  .connect("mongodb+srv://Rasul:Rasul2008@munchly.b8vuuza.mongodb.net/gamepulse", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -107,10 +107,12 @@ mongoose
     console.log("✅ MongoDB подключена");
     await seedAdmin();
     await loadCustomData();
+    await seedGamesDatabase();
+    await seedComponentsDatabase();
   })
   .catch((err) => console.error("❌ Ошибка подключения:", err));
 
-const AI_MODEL = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
+const AI_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
 const UserSchema = new mongoose.Schema({
   username: String,
@@ -136,40 +138,25 @@ const UserSchema = new mongoose.Schema({
 });
 
 async function geminiChat({ systemInstruction, history, temperature = 0.7, maxOutputTokens = 800 }) {
-  const contents = (history || [])
+  const messages = [];
+  if (systemInstruction) {
+    messages.push({ role: "system", content: String(systemInstruction) });
+  }
+  (history || [])
     .filter(m => m && m.role && m.role !== "system")
-    .map(m => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: String(m.content ?? "") }],
+    .forEach(m => messages.push({
+      role: m.role === "model" ? "assistant" : m.role,
+      content: String(m.content ?? ""),
     }));
 
-  const resp = await ai.models.generateContent({
+  const resp = await ai.chat.completions.create({
     model: AI_MODEL,
-    contents,
-    config: {
-      systemInstruction: systemInstruction || "",
-      temperature,
-      maxOutputTokens,
-    },
+    messages,
+    temperature,
+    max_tokens: maxOutputTokens,
   });
 
-  const candidates = resp?.candidates || resp?.response?.candidates || [];
-  const parts = candidates?.[0]?.content?.parts || [];
-
-  const finishReason = candidates?.[0]?.finishReason;
-
-  let text = parts
-    .map(p => (typeof p?.text === "string" ? p.text : ""))
-    .join("")
-    .trim();
-
-  if (!text) {
-    const t1 = typeof resp?.text === "string" ? resp.text : "";
-    const t2 = typeof resp?.response?.text === "function" ? resp.response.text() : "";
-    text = (t1 || t2 || "").toString().trim();
-  }
-
-  return text;
+  return resp.choices?.[0]?.message?.content?.trim() || "";
 }
 
 
@@ -507,6 +494,48 @@ const gamesDatabase = {
     },
   },
 };
+
+async function seedGamesDatabase() {
+  try {
+    const ops = Object.entries(gamesDatabase).map(([title, data]) => ({
+      updateOne: {
+        filter: { title },
+        update: { $setOnInsert: { title, ...data, image: gamesMeta[title]?.image || '', subtitle: gamesMeta[title]?.subtitle || '' } },
+        upsert: true,
+      },
+    }));
+    if (ops.length > 0) {
+      const result = await CustomGame.bulkWrite(ops, { ordered: false });
+      console.log(`✅ Игры в БД: ${result.upsertedCount} добавлено, ${result.matchedCount} уже существовало`);
+    }
+  } catch (err) {
+    console.error("Ошибка сидирования игр:", err);
+  }
+}
+
+async function seedComponentsDatabase() {
+  try {
+    const ops = [];
+    for (const [type, components] of Object.entries(componentPrices)) {
+      for (const [name, data] of Object.entries(components)) {
+        ops.push({
+          updateOne: {
+            filter: { type, name },
+            update: { $setOnInsert: { type, name, ...data } },
+            upsert: true,
+          },
+        });
+      }
+    }
+    if (ops.length > 0) {
+      const result = await CustomComponent.bulkWrite(ops, { ordered: false });
+      console.log(`✅ Компоненты в БД: ${result.upsertedCount} добавлено, ${result.matchedCount} уже существовало`);
+    }
+  } catch (err) {
+    console.error("Ошибка сидирования компонентов:", err);
+  }
+}
+
 const componentPrices = {
   cpu: {
     // ── Intel Core i3 ──────────────────────────────────────────────────────
@@ -1077,13 +1106,14 @@ Provide ONLY a JSON object (no markdown, no code blocks, no explanation outside 
   "analysis": "2-3 sentence analysis in Russian language explaining performance, bottlenecks and what settings to use"
 }`;
 
-      const aiResp = await ai.models.generateContent({
+      const aiResp = await ai.chat.completions.create({
         model: AI_MODEL,
-        contents: [{ role: 'user', parts: [{ text: aiPrompt }] }],
-        config: { temperature: 0.3, maxOutputTokens: 400 },
+        messages: [{ role: 'user', content: aiPrompt }],
+        temperature: 0.3,
+        max_tokens: 400,
       });
 
-      const rawText = (aiResp.text || '').trim();
+      const rawText = (aiResp.choices?.[0]?.message?.content || '').trim();
       const jsonMatch = rawText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         aiAnalysis = JSON.parse(jsonMatch[0]);

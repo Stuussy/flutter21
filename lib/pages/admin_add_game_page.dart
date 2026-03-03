@@ -263,8 +263,7 @@ class _AdminAddGamePageState extends State<AdminAddGamePage> {
                           margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                          ),
+                                  ),
                           clipBehavior: Clip.antiAlias,
                           child: Image.network(
                             url,
