@@ -7,13 +7,15 @@ class ApiConfig {
   static const int _port = 3001;
 
   static String get baseUrl {
-    // Production build always uses Railway
     if (kReleaseMode) return _productionUrl;
 
-    // Debug: platform-specific localhost
+    // Debug: web и Android-эмулятор могут достучаться до localhost компьютера
     if (kIsWeb) return 'http://localhost:$_port';
     if (defaultTargetPlatform == TargetPlatform.android) return 'http://10.0.2.2:$_port';
-    return 'http://localhost:$_port';
+
+    // iOS реальный девайс и симулятор → Railway
+    // Реальный iPhone не видит localhost компьютера, iOS блокирует http://
+    return _productionUrl;
   }
 
   static String get deviceBaseUrl => 'http://$_deviceServerIP:$_port';
