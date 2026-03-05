@@ -10,13 +10,20 @@ const ai = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const JWT_SECRET = process.env.JWT_SECRET || "gamepulse_jwt_secret_2024";
 const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET || "gamepulse_admin_jwt_secret_2024_secure";
 
-// ── Email transporter ──────────────────────────────────────────────────────────
+// ── Email transporter (Brevo SMTP) ────────────────────────────────────────────
 const emailTransporter = nodemailer.createTransport({
-  service: process.env.SMTP_SERVICE || "gmail",
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.SMTP_EMAIL,
     pass: process.env.SMTP_PASSWORD,
   },
+});
+
+emailTransporter.verify((err) => {
+  if (err) console.error("❌ SMTP ошибка:", err.message);
+  else console.log("✅ SMTP готов к отправке писем");
 });
 
 // ── OTP in-memory store: email → { code, expiry, purpose } ────────────────────
