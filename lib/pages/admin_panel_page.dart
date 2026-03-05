@@ -763,9 +763,12 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
             children: [
               const Icon(Icons.games_rounded, color: _gold, size: 20),
               const SizedBox(width: 8),
-              Text("Игры (${filtered.length})",
-                  style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
-              const Spacer(),
+              Flexible(
+                child: Text("Игры (${filtered.length})",
+                    style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
+                    overflow: TextOverflow.ellipsis),
+              ),
+              const SizedBox(width: 8),
               if (!_bulkMode)
                 Row(children: [
                   _smallBtn(Icons.checklist_rounded, "Выбрать", _purp, () => setState(() => _bulkMode = true)),
@@ -936,9 +939,12 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
             children: [
               const Icon(Icons.hardware_rounded, color: _gold, size: 20),
               const SizedBox(width: 8),
-              Text("Компоненты ($_totalComps)",
-                  style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
-              const Spacer(),
+              Flexible(
+                child: Text("Компоненты ($_totalComps)",
+                    style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
+                    overflow: TextOverflow.ellipsis),
+              ),
+              const SizedBox(width: 8),
               if (!_bulkMode)
                 Row(children: [
                   _smallBtn(Icons.checklist_rounded, "Выбрать", _purp, () => setState(() => _bulkMode = true)),

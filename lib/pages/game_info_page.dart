@@ -963,11 +963,14 @@ class _GameInfoPageState extends State<GameInfoPage>
             children: [
               Icon(icon, color: color, size: 13),
               const SizedBox(width: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  color: ac.textSecondary,
-                  fontSize: 10,
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: ac.textSecondary,
+                    fontSize: 10,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
